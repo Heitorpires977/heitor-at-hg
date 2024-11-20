@@ -1,0 +1,375 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Jogo de Perguntas Asiáticas</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f9;
+            margin: 0;
+            padding: 0;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 20px auto;
+            padding: 20px;
+            background-color: white;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        h1 {
+            color: #333;
+            font-size: 24px;
+            margin-bottom: 10px;
+        }
+
+        #nickname-display {
+            position: absolute;
+            top: 10px;
+            right: 20px;
+            font-size: 16px;
+            color: #555;
+            font-weight: bold;
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        .modes-container button,
+        .question-container button,
+        .result-container button {
+            display: block;
+            width: 100%;
+            padding: 12px;
+            font-size: 16px;
+            margin: 10px 0;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+            border: none;
+        }
+
+        .modes-container button {
+            background-color: #2196F3;
+            color: white;
+        }
+
+        .question-container button {
+            background-color: #4CAF50;
+            color: white;
+        }
+
+        .modes-container button:hover,
+        .question-container li:hover {
+            background-color: #45a049;
+        }
+
+        .question-container .options li {
+            padding: 12px;
+            background-color: #f1f1f1;
+            margin: 10px 0;
+            border-radius: 8px;
+            cursor: pointer;
+        }
+
+        .question-container .options li.correct {
+            background-color: #4CAF50 !important;
+            color: white;
+        }
+
+        .question-container .options li.incorrect {
+            background-color: #f44336 !important;
+            color: white;
+        }
+
+        .result-container h3 {
+            font-size: 24px;
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        .result-container button {
+            background-color: #f44336;
+        }
+    </style>
+</head>
+<body>
+
+<div id="nickname-display" class="hidden"></div>
+
+<div class="container">
+    <header>
+        <h1>Jogo de Perguntas Asiáticas</h1>
+    </header>
+
+    <div class="nickname-container">
+        <h3>Digite seu nickname:</h3>
+        <input type="text" id="nickname" placeholder="Digite seu nome..." style="width: 100%; padding: 10px;">
+        <button id="start-button">Começar</button>
+    </div>
+
+    <div class="modes-container hidden">
+        <h3>Selecione o modo de jogo:</h3>
+        <button data-mode="politica">Política</button>
+        <button data-mode="economia">Economia</button>
+        <button data-mode="cultura">Cultura</button>
+    </div>
+
+    <div class="question-container hidden">
+        <h3 id="question-title"></h3>
+        <ul id="question-options" class="options"></ul>
+    </div>
+
+    <div class="result-container hidden">
+        <h3 id="result-text"></h3>
+        <button id="retry-button">Tentar Novamente</button>
+    </div>
+</div>
+
+<script>
+    const nicknameInput = document.getElementById('nickname');
+    const startButton = document.getElementById('start-button');
+    const nicknameDisplay = document.getElementById('nickname-display');
+    const nicknameContainer = document.querySelector('.nickname-container');
+    const modesContainer = document.querySelector('.modes-container');
+    const questionContainer = document.querySelector('.question-container');
+    const resultContainer = document.querySelector('.result-container');
+    const questionTitle = document.getElementById('question-title');
+    const questionOptions = document.getElementById('question-options');
+    const retryButton = document.getElementById('retry-button');
+
+    const questions = {
+        politica: [
+            { question: "Quem fundou o Império do Japão e se autoproclamou seu primeiro imperador?", options: ["Shōtoku Taishi", "Jinmu Tennō", "Minamoto no Yoritomo", "Oda Nobunaga"], correct: 1 },
+            { 
+  "question": "Qual foi o primeiro país asiático a ter uma constituição escrita?", 
+  "options": ["Japão", "Coreia do Sul", "Índia", "Tailândia"], 
+  "correct": 0 
+},
+{
+  "question": "Quem foi o líder da Revolução Chinesa de 1911?",
+  "options": ["Sun Yat-sen", "Mao Tsé-Tung", "Chiang Kai-shek", "Zhou Enlai"],
+  "correct": 0
+},
+{
+  "question": "Qual país asiático foi o primeiro a abolir a pena de morte?",
+  "options": ["Japão", "Nepal", "Malásia", "Tailândia"],
+  "correct": 1
+},
+{
+  "question": "Qual foi o líder político que fundou a República Popular da China em 1949?",
+  "options": ["Mao Tsé-Tung", "Deng Xiaoping", "Jiang Zemin", "Xi Jinping"],
+  "correct": 0
+},
+{
+  "question": "Em que ano o Vietnã unificou-se após a Guerra do Vietnã?",
+  "options": ["1965", "1970", "1975", "1980"],
+  "correct": 2
+},
+{
+  "question": "Em 2023, quem era o líder da Coreia do Norte?",
+  "options": ["Kim Jong-un", "Kim Jong-il", "Kim Il-sung", "Kim Jung-hyun"],
+  "correct": 0
+},
+{
+  "question": "Qual país asiático adotou o sistema de governo socialista em 1975, após a queda de um regime militar?",
+  "options": ["Vietnã", "Laos", "Cambodja", "Myanmar"],
+  "correct": 0
+},
+{
+  "question": "Qual foi o principal motivo para a separação da Índia e do Paquistão em 1947?",
+  "options": ["Religião", "Economia", "Recursos naturais", "Disputas territoriais"],
+  "correct": 0
+},
+{
+  "question": "Quem foi o primeiro presidente da Indonésia?",
+  "options": ["Sukarno", "Suharto", "Megawati Sukarnoputri", "Joko Widodo"],
+  "correct": 0
+}
+
+
+
+
+        ],
+        economia: [
+            { question: "Qual foi a maior economia da Ásia em 2019?", options: ["Japão", "China", "Índia", "Coreia do Sul"], correct: 1 },
+            {
+  "question": "Qual país asiático é o maior exportador mundial de eletrônicos desde os anos 2000?",
+  "options": ["Japão", "China", "Coreia do Sul", "Taiwan"],
+  "correct": 1
+},
+{
+  "question": "Qual é o principal centro financeiro da Ásia desde o século XX até os dias de hoje?",
+  "options": ["Tóquio", "Hong Kong", "Seul", "Singapura"],
+  "correct": 1
+},
+{
+  "question": "Em 2021, qual país asiático tinha a maior reserva de petróleo confirmada?",
+  "options": ["Irã", "Arábia Saudita", "Rússia", "Kuwait"],
+  "correct": 1
+},
+{
+  "question": "Qual país asiático tem o maior mercado de e-commerce do mundo?",
+  "options": ["Índia", "China", "Japão", "Coreia do Sul"],
+  "correct": 1
+},
+{
+  "question": "Em 2020, qual país asiático foi o maior produtor de carros no continente?",
+  "options": ["China", "Japão", "Coreia do Sul", "Índia"],
+  "correct": 0
+},
+{
+  "question": "Qual país asiático é conhecido por ser o maior produtor de diamantes do mundo?",
+  "options": ["Japão", "Rússia", "Índia", "Singapura"],
+  "correct": 1
+},
+{
+  "question": "Qual país asiático tem o maior mercado de smartphones em termos de vendas?",
+  "options": ["Japão", "China", "Coreia do Sul", "Índia"],
+  "correct": 1
+},
+{
+  "question": "Qual país asiático foi o primeiro a introduzir o conceito de 'startups' como parte de sua economia no final do século XX?",
+  "options": ["Japão", "Singapura", "Israel", "Hong Kong"],
+  "correct": 2
+},
+{
+  "question": "Em 2023, qual país asiático era o maior destino de investimento estrangeiro direto na região?",
+  "options": ["Japão", "China", "Índia", "Vietnã"],
+  "correct": 1
+}
+        ],
+        cultura: [
+            { question: "Qual dessas religiões tem suas origens no subcontinente indiano?", options: ["Hinduísmo", "Islamismo", "Budismo", "Cristianismo"], correct: 0 },
+            {
+  "question": "Qual é o nome do sistema filosófico chinês fundado por Confúcio?",
+  "options": ["Taoísmo", "Confucionismo", "Budismo", "Xintoísmo"],
+  "correct": 1
+},
+{
+  "question": "Qual é a famosa dança tradicional da Tailândia?",
+  "options": ["Khon", "Hula", "Flamenco", "Tango"],
+  "correct": 0
+},
+{
+  "question": "O que é a cerimônia do chá no Japão chamada?",
+  "options": ["Chanoyu", "Saori", "Chaji", "Temaki"],
+  "correct": 0
+},
+{
+  "question": "Qual é o estilo tradicional de teatro no Japão, que mistura música, dança e drama?",
+  "options": ["Noh", "Kabuki", "Noh e Kabuki", "Pantomima"],
+  "correct": 2
+},
+{
+  "question": "Quem é o autor do livro 'O Pequeno Príncipe', que influenciou muitos aspectos da literatura asiática moderna?",
+  "options": ["Antoine de Saint-Exupéry", "Gabriel García Márquez", "Haruki Murakami", "Liu Cixin"],
+  "correct": 0
+},
+{
+  "question": "Em que país a arte de fazer lanternas de papel é tradicionalmente popular?",
+  "options": ["Japão", "China", "Índia", "Coreia do Sul"],
+  "correct": 1
+},
+{
+  "question": "Em qual país asiático é celebrado o Festival das Lanternas, tradicionalmente?",
+  "options": ["Taiwan", "Japão", "Vietnã", "China"],
+  "correct": 0
+},
+{
+  "question": "Qual é o principal esporte tradicional da Mongólia?",
+  "options": ["Futebol", "Tênis", "Luta Livre", "Basquete"],
+  "correct": 2
+},
+{
+  "question": "O que significa 'diwali', uma das maiores festas religiosas da Índia?",
+  "options": ["Festival das Luzes", "Festival da Colheita", "Festa das Flores", "Festival da Água"],
+  "correct": 0
+}
+        ]
+    };
+
+    let currentCategory = '';
+    let currentQuestion = 0;
+    let score = 0;
+
+    startButton.addEventListener('click', () => {
+        const nickname = nicknameInput.value.trim();
+        if (nickname) {
+            nicknameDisplay.textContent = `Nickname: ${nickname}`;
+            nicknameDisplay.classList.remove('hidden');
+            nicknameContainer.classList.add('hidden');
+            modesContainer.classList.remove('hidden');
+        }
+    });
+
+    modesContainer.addEventListener('click', (event) => {
+        const mode = event.target.dataset.mode;
+        if (mode) {
+            currentCategory = mode;
+            currentQuestion = 0;
+            score = 0;
+            modesContainer.classList.add('hidden');
+            showQuestion();
+        }
+    });
+
+    questionOptions.addEventListener('click', (event) => {
+        const selectedOption = event.target;
+        if (selectedOption.tagName === 'LI') {
+            const index = parseInt(selectedOption.dataset.index);
+            const currentQ = questions[currentCategory][currentQuestion];
+            if (index === currentQ.correct) {
+                selectedOption.classList.add('correct');
+                score++;
+            } else {
+                selectedOption.classList.add('incorrect');
+            }
+            setTimeout(() => {
+                currentQuestion++;
+                if (currentQuestion < questions[currentCategory].length) {
+                    showQuestion();
+                } else {
+                    showResults();
+                }
+            }, 1000);
+        }
+    });
+
+    retryButton.addEventListener('click', () => {
+        resultContainer.classList.add('hidden');
+        modesContainer.classList.remove('hidden');
+    });
+
+    function showQuestion() {
+        const currentQ = questions[currentCategory][currentQuestion];
+        questionTitle.textContent = currentQ.question;
+        questionOptions.innerHTML = '';
+        currentQ.options.forEach((option, index) => {
+            const li = document.createElement('li');
+            li.textContent = option;
+            li.dataset.index = index;
+            questionOptions.appendChild(li);
+        });
+        questionContainer.classList.remove('hidden');
+    }
+
+    function showResults() {
+        questionContainer.classList.add('hidden');
+        resultContainer.classList.remove('hidden');
+        document.getElementById('result-text').textContent = `Você acertou ${score} de ${questions[currentCategory].length} perguntas!`;
+    }
+</script>
+
+</body>
+</html>
